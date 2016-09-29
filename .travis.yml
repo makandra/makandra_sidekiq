@@ -1,5 +1,12 @@
 sudo: false
 language: ruby
 rvm:
-  - 2.3.0
-before_install: gem install bundler -v 1.12.5
+  - 2.3.1
+script: bundle exec rspec spec
+cache: bundler
+notifications:
+  email:
+    - fail@makandra.de
+branches:
+  only:
+    - master
