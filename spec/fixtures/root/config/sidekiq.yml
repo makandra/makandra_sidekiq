@@ -1,0 +1,7 @@
+<% concurrency = 10 %>
+---
+:verbose: false
+:concurrency: <%= concurrency %>
+:pidfile: ./tmp/pids/sidekiq.pid
+:logfile: ./log/sidekiq.log
+:timeout: 30
