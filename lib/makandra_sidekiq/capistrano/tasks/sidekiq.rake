@@ -1,10 +1,12 @@
 namespace :sidekiq do
 
-  def run_task(name)
+  def run_task(name, allow_missing_task: false)
     on roles :sidekiq do
       within release_path do
         with rails_env: fetch(:rails_env) do
-          execute :rake, "sidekiq:#{name}"
+          if !allow_missing_task || test(:rake, "-T sidekiq:#{name} | grep sidekiq:#{name}")
+            execute :rake, "sidekiq:#{name}"
+          end
         end
       end
     end
@@ -12,7 +14,7 @@ namespace :sidekiq do
 
   desc 'Quiet sidekiq (stop processing new tasks)'
   task :quiet do
-    run_task('quiet')
+    run_task('quiet', allow_missing_task: true)
   end
 
   desc 'Stop sidekiq'
