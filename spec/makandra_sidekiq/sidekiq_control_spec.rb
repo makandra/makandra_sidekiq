@@ -76,7 +76,7 @@ describe MakandraSidekiq::SidekiqControl do
       expect(Open3).to receive(:capture3).with(
         'bundle', 'exec', 'sidekiq',
         '--index', '0',
-        '--environment', 'development',
+        '--environment', 'test',
         '--config', match_path(root.join('config', 'sidekiq.yml')),
         '--daemon',
         chdir: match_path(root)
