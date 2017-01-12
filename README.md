@@ -50,13 +50,13 @@ When using [whenever](https://github.com/javan/whenever), add this to your sched
 
 ```
 every :reboot do
-  rake 'sidekiq:start'
+  rake 'sidekiq:start', output: { standard: nil }
 end
 ```
 
 In case you don't use whenever, this crontab entry will work:
 ```
-@reboot /bin/bash -l -c 'cd /path/to/rails/root && RAILS_ENV=environment bundle exec rake sidekiq:start --silent'
+@reboot /bin/bash -l -c 'cd /path/to/rails/root && RAILS_ENV=environment bundle exec rake sidekiq:start --silent > /dev/null'
 ```
 
 
