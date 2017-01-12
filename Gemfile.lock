@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    makandra_sidekiq (0.1.1)
+    makandra_sidekiq (0.1.2)
       capistrano (>= 3)
 
 GEM

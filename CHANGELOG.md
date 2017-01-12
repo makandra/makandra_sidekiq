@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2][] (2017-01-12)
+
+`sidekiq:start` checks that sidekiq really comes up and will retry a few times.
+
 ## [0.1.1][] (2016-09-29)
 
 Do not fail on first deploy.
