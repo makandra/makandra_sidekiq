@@ -36,14 +36,15 @@ module MakandraSidekiq
         puts 'Sidekiq is already running.'
       else
         puts 'Starting Sidekiq...'
-        run_sidekiq
+        patiently_start_sidekiq
+        puts 'Done.'
       end
     end
 
     private
 
     def rails_env
-      @rails_env ||= ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development'
+      ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development'
     end
 
     def config_path
@@ -54,13 +55,14 @@ module MakandraSidekiq
       @pid_file ||= @root.join(@config[:pidfile])
     end
 
-    def pid
-      @pid ||= if pid_file.file?
+    def read_pid
+      if pid_file.file?
         pid_file.read.to_i
       end
     end
 
     def running?
+      pid = read_pid
       Process.kill(0, pid) if pid
     rescue Errno::ESRCH
       # not running
@@ -95,7 +97,36 @@ module MakandraSidekiq
       bundle_exec('sidekiqctl', command, pid_file.to_s)
     end
 
-    def run_sidekiq
+    def patiently_start_sidekiq
+      remove_pid_file
+      try_times(5, error: "Sidekiq failed to start. Check #{@config[:logfile]}.") do |i|
+        puts "Trying to spawn (attempt #{i})..."
+        spawn_sidekiq
+        try_times(20, error: "Sidekiq did not create a PID file and probably failed to start. Check #{@config[:logfile]}.") do
+          pid_file_present?
+        end
+        sleep 10 # wait for any crashes during startup
+        running?
+      end
+    end
+
+    def remove_pid_file
+      pid_file.delete if pid_file_present?
+    end
+
+    def pid_file_present?
+      pid_file.file?
+    end
+
+    def try_times(count, error:)
+      count.times do |i|
+        return if yield(i + 1)
+        sleep(1)
+      end
+      fail error
+    end
+
+    def spawn_sidekiq
       arguments = [
         '--index', sidekiq_index.to_s,
         '--environment', rails_env,
@@ -113,7 +144,7 @@ module MakandraSidekiq
       stdout_str, stderr_str, status = Open3.capture3('bundle', 'exec', *command, chdir: @root.to_s)
       puts stdout_str
       unless status.success?
-        fail "Sidekiqctl failed with message: #{stderr_str}"
+        fail "#{command} failed with message: #{stderr_str}"
       end
     end
 

@@ -72,6 +72,23 @@ describe MakandraSidekiq::SidekiqControl do
 
   describe '#start' do
 
+    let(:pidfile) { root.join('tmp', 'pids', 'sidekiq.pid') }
+
+    before do
+      allow(subject).to receive(:sleep)
+    end
+
+    after do
+      pidfile.delete if pidfile.file?
+    end
+
+    def create_pid_file(pid = $$)
+      pidfile.parent.mkpath
+      File.open(root.join('tmp', 'pids', 'sidekiq.pid'), 'w') do |f|
+        f.print(pid)
+      end
+    end
+
     it 'runs "sidekiq start"' do
       expect(Open3).to receive(:capture3).with(
         'bundle', 'exec', 'sidekiq',
@@ -80,8 +97,10 @@ describe MakandraSidekiq::SidekiqControl do
         '--config', match_path(root.join('config', 'sidekiq.yml')),
         '--daemon',
         chdir: match_path(root)
-      ).and_return(['', '', success])
-      expect(subject).to receive(:running?).and_return(false)
+      ) do
+        create_pid_file
+        ['', '', success]
+      end
       subject.start
     end
 
@@ -91,13 +110,33 @@ describe MakandraSidekiq::SidekiqControl do
         ENV['RAILS_ENV'] = 'rails_env'
         expect(Open3).to receive(:capture3) do |*arguments|
           expect(arguments).to include('rails_env')
+          create_pid_file
           ['', '', success]
         end
-        expect(subject).to receive(:running?).and_return(false)
         subject.start
       ensure
         ENV['RAILS_ENV'] = old_env
       end
+    end
+
+    it 'retries a few times if sidekiq crashes' do
+      count = 0
+      expect(Open3).to receive(:capture3).exactly(5).times do
+        count += 1
+        create_pid_file(count == 5 ? $$ : 1234567890)
+        ['', '', success]
+      end
+      subject.start
+    end
+
+    it 'fails if sidekiq keeps crashing' do
+      expect(Open3).to receive(:capture3).exactly(5).times do
+        create_pid_file(1234567890)
+        ['', '', success]
+      end
+      expect {
+        subject.start
+      }.to raise_error(/failed to start/)
     end
 
   end
