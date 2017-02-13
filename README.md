@@ -1,8 +1,8 @@
 # makandra_sidekiq [![Build Status](https://travis-ci.org/makandra/makandra_sidekiq.svg?branch=master)](https://travis-ci.org/makandra/makandra_sidekiq)
 
-Support code for our default sidekiq setup.
+Support code for our default Sidekiq setup.
 
-Includes rake tasks to start and stop sidekiq, capistrano recipes for deployment, and a way to restart sidekiq on reboot.
+Includes rake tasks to start and stop Sidekiq, Capistrano recipes for deployment, and a way to restart Sidekiq on reboot.
 
 
 ## Installation
@@ -29,7 +29,9 @@ Make sure you include at least `:pidfile` and `:logfile`. Sane values are
 
 ### Capistrano
 
-makandra_sidekiq requires [capistrano](https://github.com/capistrano/capistrano) >= 3.
+makandra_sidekiq comes with [Capistrano](https://github.com/capistrano/capistrano) recipes to call its rake tasks for (re)starting Sidekiq during deployment.
+
+Note that those recipes require Capistrano 3+.
 
 - Add the following line to your Capfile:
 
@@ -44,7 +46,7 @@ makandra_sidekiq requires [capistrano](https://github.com/capistrano/capistrano)
 
 ### Restart sidekiq on reboot
 
-Simply add `rake sidekiq:start` as a @reboot task to your crontab.
+Simply add `rake sidekiq:start` as a `@reboot` task to your crontab.
 
 When using [whenever](https://github.com/javan/whenever), add this to your schedule.rb:
 
