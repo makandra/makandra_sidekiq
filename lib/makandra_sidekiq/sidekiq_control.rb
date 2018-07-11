@@ -131,9 +131,18 @@ module MakandraSidekiq
         '--index', sidekiq_index.to_s,
         '--environment', rails_env,
         '--config', config_path.to_s,
-        '--daemon'
+        '--daemon',
+        *additional_command_line_args,
       ]
       bundle_exec('sidekiq', *arguments)
+    end
+
+    def additional_command_line_args
+      if (raw_args = @config[:sidekiq_command_line_args])
+        raw_args.split(' ')
+      else
+        []
+      end
     end
 
     def sidekiq_index
