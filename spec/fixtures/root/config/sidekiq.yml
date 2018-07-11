@@ -1,5 +1,6 @@
 <% concurrency = 10 %>
 ---
+:sidekiq_command_line_args: '-r boot.rb'
 :verbose: false
 :concurrency: <%= concurrency %>
 :pidfile: ./tmp/pids/sidekiq.pid

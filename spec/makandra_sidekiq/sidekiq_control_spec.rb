@@ -96,6 +96,7 @@ describe MakandraSidekiq::SidekiqControl do
         '--environment', 'test',
         '--config', match_path(root.join('config', 'sidekiq.yml')),
         '--daemon',
+        '-r', 'boot.rb',
         chdir: match_path(root)
       ) do
         create_pid_file
