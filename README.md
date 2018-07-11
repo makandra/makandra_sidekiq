@@ -27,6 +27,17 @@ Make sure you include at least `:pidfile` and `:logfile`. Sane values are
 :logfile: ./log/sidekiq.log
 ```
 
+
+### Passing additional options to sidekiq
+
+Sometimes you will have to pass additional options to the sidekiq binary. You can do this by adding
+
+```
+:sidekiq_command_line_args: '--some --options'
+```
+to your `config/sidekiq.yml`.
+
+
 ### Capistrano
 
 makandra_sidekiq comes with [Capistrano](https://github.com/capistrano/capistrano) recipes to call its rake tasks for (re)starting Sidekiq during deployment.
