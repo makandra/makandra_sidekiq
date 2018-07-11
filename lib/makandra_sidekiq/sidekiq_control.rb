@@ -1,3 +1,4 @@
+require 'bundler'
 require 'pathname'
 require 'yaml'
 require 'open3'
@@ -150,7 +151,7 @@ module MakandraSidekiq
     end
 
     def bundle_exec(*command)
-      stdout_str, stderr_str, status = Open3.capture3('bundle', 'exec', *command, chdir: @root.to_s)
+      stdout_str, stderr_str, status = Bundler.with_clean_env { Open3.capture3('bundle', 'exec', *command, chdir: @root.to_s) }
       puts stdout_str
       unless status.success?
         fail "#{command} failed with message: #{stderr_str}"
