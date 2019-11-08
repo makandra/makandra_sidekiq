@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    makandra_sidekiq (0.1.5)
+    makandra_sidekiq (0.2.0)
       sidekiq (< 6)
 
 GEM
