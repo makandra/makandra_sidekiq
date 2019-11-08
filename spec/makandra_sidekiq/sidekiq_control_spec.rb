@@ -45,27 +45,47 @@ describe MakandraSidekiq::SidekiqControl do
   end
 
   describe '#quiet' do
+    before do
+      expect(subject).to receive(:running?).and_return(true)
+    end
 
     it 'runs "sidekiqctl quiet"' do
       expect(Open3).to receive(:capture3).with(
         'bundle', 'exec', 'sidekiqctl', 'quiet', match_path(root.join('tmp/pids/sidekiq.pid')),
         chdir: match_path(root)
       ).and_return(['', '', success])
-      expect(subject).to receive(:running?).and_return(true)
+
       subject.quiet
     end
-
   end
 
   describe '#stop' do
+    before do
+      expect(subject).to receive(:running?).and_return(true)
+    end
 
     it 'runs "sidekiqctl stop"' do
+      timeout = 32
       expect(Open3).to receive(:capture3).with(
-        'bundle', 'exec', 'sidekiqctl', 'stop', match_path(root.join('tmp/pids/sidekiq.pid')),
+        'bundle', 'exec', 'sidekiqctl', 'stop', match_path(root.join('tmp/pids/sidekiq.pid')), timeout.to_s,
         chdir: match_path(root)
       ).and_return(['', '', success])
-      expect(subject).to receive(:running?).and_return(true)
+
       subject.stop
+    end
+
+    context 'when no timeout is configured' do
+      let(:root) { Pathname.new(File.expand_path('../fixtures/root_without_timeout', __dir__)) }
+
+      it 'uses Sidekiq’s default timeout' do
+        timeout = 10
+        expect(Open3).to receive(:capture3).with(
+          'bundle', 'exec', 'sidekiqctl', 'stop', match_path(root.join('tmp/pids/sidekiq.pid')), timeout.to_s,
+          chdir: match_path(root)
+        ).and_return(['', '', success])
+
+        subject.stop
+      end
     end
 
   end

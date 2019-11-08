@@ -1,4 +1,5 @@
 require 'bundler'
+require 'sidekiq'
 require 'pathname'
 require 'yaml'
 require 'open3'
@@ -17,7 +18,7 @@ module MakandraSidekiq
     def quiet
       if running?
         puts 'Preventing Sidekiq from accepting new jobs...'
-        run_sidekiqctl('quiet')
+        sidekiqctl_quiet
       else
         puts 'Sidekiq is not running.'
       end
@@ -26,7 +27,7 @@ module MakandraSidekiq
     def stop
       if running?
         puts 'Stopping Sidekiq...'
-        run_sidekiqctl('stop')
+        sidekiqctl_stop
       else
         puts 'Sidekiq is not running.'
       end
@@ -54,6 +55,11 @@ module MakandraSidekiq
 
     def pid_file
       @pid_file ||= @root.join(@config[:pidfile])
+    end
+
+    # The shutdown timeout for Sidekiq
+    def timeout
+      @timeout ||= @config[:timeout] || Sidekiq::DEFAULTS[:timeout]
     end
 
     def read_pid
@@ -94,8 +100,16 @@ module MakandraSidekiq
       config
     end
 
-    def run_sidekiqctl(command)
-      bundle_exec('sidekiqctl', command, pid_file.to_s)
+    def sidekiqctl_quiet
+      bundle_exec 'sidekiqctl', 'quiet', pid_file
+    end
+
+    def sidekiqctl_stop
+      # The "hard kill after" timeout for sidekiqctl. Adding a few seconds to be
+      # sure that jobs running at shutdown are requeued by Sidekiq.
+      safe_timeout = timeout + 2 # seconds
+
+      bundle_exec 'sidekiqctl', 'stop', pid_file, safe_timeout
     end
 
     def patiently_start_sidekiq
@@ -151,7 +165,8 @@ module MakandraSidekiq
     end
 
     def bundle_exec(*command)
-      stdout_str, stderr_str, status = Bundler.with_clean_env { Open3.capture3('bundle', 'exec', *command, chdir: @root.to_s) }
+      string_command = command.map(&:to_s)
+      stdout_str, stderr_str, status = Bundler.with_clean_env { Open3.capture3('bundle', 'exec', *string_command, chdir: @root.to_s) }
       puts stdout_str
       unless status.success?
         fail "#{command} failed with message: #{stderr_str}"
