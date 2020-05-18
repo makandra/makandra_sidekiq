@@ -41,7 +41,6 @@ describe MakandraSidekiq::SidekiqControl do
         described_class.new(root)
       }.to raise_error(/does not set a :pidfile.*does not set a :logfile/m)
     end
-
   end
 
   describe '#quiet' do
@@ -49,11 +48,13 @@ describe MakandraSidekiq::SidekiqControl do
       expect(subject).to receive(:running?).and_return(true)
     end
 
-    it 'runs "sidekiqctl quiet"' do
-      expect(Open3).to receive(:capture3).with(
-        'bundle', 'exec', 'sidekiqctl', 'quiet', match_path(root.join('tmp/pids/sidekiq.pid')),
-        chdir: match_path(root)
-      ).and_return(['', '', success])
+    it 'runs "sidekiqctl quiet" in a new environment' do
+      expect(subject).to receive(:without_bundler_env).and_yield do |scope|
+        expect(scope).to receive(:capture3).with(
+          'bundle', 'exec', 'sidekiqctl', 'quiet', match_path(root.join('tmp/pids/sidekiq.pid')),
+          chdir: match_path(root)
+        ).and_return(['', '', success])
+      end
 
       subject.quiet
     end
@@ -64,12 +65,14 @@ describe MakandraSidekiq::SidekiqControl do
       expect(subject).to receive(:running?).and_return(true)
     end
 
-    it 'runs "sidekiqctl stop"' do
+    it 'runs "sidekiqctl stop" in a new environment' do
       timeout = 32
-      expect(Open3).to receive(:capture3).with(
-        'bundle', 'exec', 'sidekiqctl', 'stop', match_path(root.join('tmp/pids/sidekiq.pid')), timeout.to_s,
-        chdir: match_path(root)
-      ).and_return(['', '', success])
+      expect(subject).to receive(:without_bundler_env).and_yield do |scope|
+        expect(scope).to receive(:capture3).with(
+          'bundle', 'exec', 'sidekiqctl', 'stop', match_path(root.join('tmp/pids/sidekiq.pid')), timeout.to_s,
+          chdir: match_path(root)
+        ).and_return(['', '', success])
+      end
 
       subject.stop
     end
@@ -87,11 +90,9 @@ describe MakandraSidekiq::SidekiqControl do
         subject.stop
       end
     end
-
   end
 
   describe '#start' do
-
     let(:pidfile) { root.join('tmp', 'pids', 'sidekiq.pid') }
 
     before do
@@ -109,18 +110,20 @@ describe MakandraSidekiq::SidekiqControl do
       end
     end
 
-    it 'runs "sidekiq start"' do
-      expect(Open3).to receive(:capture3).with(
-        'bundle', 'exec', 'sidekiq',
-        '--index', '0',
-        '--environment', 'test',
-        '--config', match_path(root.join('config', 'sidekiq.yml')),
-        '--daemon',
-        '-r', 'boot.rb',
-        chdir: match_path(root)
-      ) do
-        create_pid_file
-        ['', '', success]
+    it 'runs "sidekiq start" in a new environment' do
+      expect(subject).to receive(:without_bundler_env).and_yield do |scope|
+        expect(scope).to receive(:capture3).with(
+          'bundle', 'exec', 'sidekiq',
+          '--index', '0',
+          '--environment', 'test',
+          '--config', match_path(root.join('config', 'sidekiq.yml')),
+          '--daemon',
+          '-r', 'boot.rb',
+          chdir: match_path(root)
+        ) do
+          create_pid_file
+          ['', '', success]
+        end
       end
       subject.start
     end
@@ -159,7 +162,33 @@ describe MakandraSidekiq::SidekiqControl do
         subject.start
       }.to raise_error(/failed to start/)
     end
+  end
 
+  describe '#without_bundler_env' do
+    it 'discards a surrounding bundler environment' do
+      block = Proc.new {}
+      mock_bundler = double
+      stub_const('Bundler', mock_bundler)
+
+      expect(Bundler).to receive(:with_original_env) { |&given_block| expect(given_block).to eq(block) }
+      subject.send(:without_bundler_env, &block)
+    end
+
+    it 'uses Bundler.with_clean_env on older versions of Bundler' do
+      block = Proc.new {}
+      mock_bundler = double
+      stub_const('Bundler', mock_bundler)
+
+      expect(Bundler).to receive(:with_clean_env) { |&given_block| expect(given_block).to eq(block) }
+      subject.send(:without_bundler_env, &block)
+    end
+  end
+
+  describe '#capture3' do
+    it 'delegates to Open3.capture3' do
+      expect(Open3).to receive(:capture3).with('my', 'command', { my_options: 'here' })
+      subject.send(:capture3, 'my', 'command', { my_options: 'here' })
+    end
   end
 
 end
