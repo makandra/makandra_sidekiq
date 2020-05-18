@@ -166,11 +166,20 @@ module MakandraSidekiq
 
     def bundle_exec(*command)
       string_command = command.map(&:to_s)
-      stdout_str, stderr_str, status = Bundler.with_clean_env { Open3.capture3('bundle', 'exec', *string_command, chdir: @root.to_s) }
+      root = @root.to_s
+      stdout_str, stderr_str, status = with_original_env { capture3('bundle', 'exec', *string_command, chdir: root) }
       puts stdout_str
       unless status.success?
         fail "#{command} failed with message: #{stderr_str}"
       end
+    end
+
+    def capture3(*command)
+      Open3.capture3(*command)
+    end
+
+    def with_original_env(&block)
+      Bundler.with_original_env(&block)
     end
 
   end
