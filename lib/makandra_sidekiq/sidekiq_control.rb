@@ -70,9 +70,12 @@ module MakandraSidekiq
 
     def running?
       pid = read_pid
-      Process.kill(0, pid) if pid
+      Process.kill(0, pid) if pid # kill(0, pid) checks pid validity
     rescue Errno::ESRCH
-      # not running
+      false # Not running
+    rescue Errno::EPERM
+      # The process from Sidekiq's pidfile does not belong to us. This can occur
+      # when Sidekiq for some reason stopped but left behind its pidfile.
       false
     end
 
