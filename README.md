@@ -1,4 +1,4 @@
-# makandra_sidekiq [![Build Status](https://travis-ci.org/makandra/makandra_sidekiq.svg?branch=master)](https://travis-ci.org/makandra/makandra_sidekiq)
+# makandra_sidekiq [![Build Status](https://github.com/makandra/makandra_sidekiq/workflows/build/badge.svg)](https://github.com/makandra/makandra_sidekiq/actions)
 
 Support code for our default Sidekiq setup.
 
