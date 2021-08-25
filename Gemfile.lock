@@ -1,16 +1,16 @@
 PATH
   remote: .
   specs:
-    makandra_sidekiq (0.2.1)
+    makandra_sidekiq (0.2.2)
       sidekiq (< 6)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    connection_pool (2.2.2)
+    connection_pool (2.2.5)
     diff-lcs (1.3)
-    rack (2.0.9)
-    rack-protection (2.0.8.1)
+    rack (2.2.3)
+    rack-protection (2.1.0)
       rack
     rake (10.5.0)
     redis (4.1.4)
@@ -27,11 +27,11 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.5.0)
     rspec-support (3.5.0)
-    sidekiq (5.2.8)
+    sidekiq (5.2.9)
       connection_pool (~> 2.2, >= 2.2.2)
-      rack (< 2.1.0)
+      rack (~> 2.0)
       rack-protection (>= 1.5.0)
-      redis (>= 3.3.5, < 5)
+      redis (>= 3.3.5, < 4.2)
 
 PLATFORMS
   ruby
