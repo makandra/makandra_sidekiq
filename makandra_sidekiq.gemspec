@@ -11,6 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Support code for sidekiq, including rake tasks and capistrano recipes.}
   spec.homepage      = "https://github.com/makandra/makandra_sidekiq"
+  spec.metadata      = { 'rubygems_mfa_required' => 'true' }
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
