@@ -7,6 +7,18 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ## Unreleased
 
 
+## 0.2.3 2022-03-16
+
+### Compatible changes
+- Activate Rubygems MFA
+
+
+## 0.2.2 2020-07-20
+
+### Compatible changes
+- Support edge case where Sidekiq stopped but left behind its pidfile (closes [#5](https://github.com/makandra/makandra_sidekiq/issues/5))
+
+
 ## 0.2.1 2020-05-18
 
 ### Compatible changes

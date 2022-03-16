@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    makandra_sidekiq (0.2.2)
+    makandra_sidekiq (0.2.3)
       sidekiq (< 6)
 
 GEM
@@ -43,4 +43,4 @@ DEPENDENCIES
   rspec (~> 3.0)
 
 BUNDLED WITH
-   1.17.2
+   1.17.3
