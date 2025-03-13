@@ -1,4 +1,10 @@
-# makandra_sidekiq [![Build Status](https://github.com/makandra/makandra_sidekiq/workflows/build/badge.svg)](https://github.com/makandra/makandra_sidekiq/actions)
+# Deprecation
+
+This gem only targets Sidekiq < 6. Since then, Sidekiq no longer offers it's own daemoinzation, and all rake tasks provided here do not make sense any more. We're therefore deprecating this gem.
+
+
+
+# makandra_sidekiq
 
 Support code for our default Sidekiq setup.
 
